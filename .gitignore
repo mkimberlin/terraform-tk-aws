@@ -38,4 +38,4 @@ terraform.rc
 
 # IDEs
 .idea/*
-
+*.iml
