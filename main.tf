@@ -23,7 +23,7 @@ data "aws_iam_policy" "admin-policy" {
   name  = "AdministratorAccess"
 }
 
-resource "aws_iam_group_policy_attachment" "test-attach" {
+resource "aws_iam_group_policy_attachment" "admin-policy-attachment" {
   group      = aws_iam_group.admin-group.name
   policy_arn = data.aws_iam_policy.admin-policy.arn
 }
