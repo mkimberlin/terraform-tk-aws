@@ -27,7 +27,7 @@ resource "aws_iam_group_membership" "file-uploaders" {
 }
 
 resource "aws_iam_policy" "upload-only-policy" {
-  name    = "FileUploadOnly"
+  name    = "file-upload-only"
   policy  = templatefile("${path.module}/policies/file-upload-write-only.policy.tftpl", { bucket-arn: aws_s3_bucket.file-upload.arn })
 }
 
