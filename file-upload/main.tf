@@ -73,7 +73,7 @@ resource "aws_iam_role_policy" "file-upload-reader-policy" {
 
 data "archive_file" "lambda-archive" {
   type        = "zip"
-  source_file = "${path.module}/lambdas/file-upload.js"
+  source_file = "${path.module}/lambdas/file-upload.mjs"
   output_path = "${path.module}/dist/lambda_function_payload.zip"
 }
 
@@ -82,17 +82,25 @@ resource "aws_lambda_function" "file-upload-reader" {
   # If the file is not in the current working directory you will need to include a
   # path. module in the filename.
   filename      = "${path.module}/dist/lambda_function_payload.zip"
-  function_name = "file-upload-reader"
+  function_name = var.lambda-function-name
   role          = aws_iam_role.file-upload-reader.arn
   source_code_hash = data.archive_file.lambda-archive.output_base64sha256
   runtime = "nodejs22.x"
-  handler = "index.handler"
+  handler = "file-upload.handler"
+  depends_on    = [aws_cloudwatch_log_group.file-upload-reader]
 
   environment {
     variables = {
       # "SQS_QUEUE_URL" = aws_sqs_queue...
     }
   }
+}
+
+# Create a log group for the file-upload-reader lambda to use
+resource "aws_cloudwatch_log_group" "file-upload-reader" {
+  name              = "/aws/lambda/${var.lambda-function-name}"
+  retention_in_days = 7
+  skip_destroy = false
 }
 
 resource "aws_s3_bucket_notification" "file-upload-reader-trigger" {
