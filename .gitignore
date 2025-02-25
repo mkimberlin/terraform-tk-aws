@@ -39,3 +39,6 @@ terraform.rc
 # IDEs
 .idea/*
 *.iml
+
+# Distribution directories
+**/dist

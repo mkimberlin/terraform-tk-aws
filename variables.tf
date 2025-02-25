@@ -9,3 +9,9 @@ variable "default_timezone" {
   description = "The default time zone to be used"
   default     = "America/Chicago"
 }
+
+variable "budget_notification_recipients" {
+  type        = list(string)
+  description = "The email addresses of those people who should get notified"
+  default = []
+}
