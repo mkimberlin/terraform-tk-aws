@@ -13,5 +13,4 @@ variable "default_timezone" {
 variable "budget_notification_recipients" {
   type        = list(string)
   description = "The email addresses of those people who should get notified"
-  default = []
 }
