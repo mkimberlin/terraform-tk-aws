@@ -16,6 +16,13 @@
         "s3:GetObject"
       ],
       "Resource": "${bucket-arn}/*"
-    }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "${bucket-arn}"
+   }
   ]
 }
