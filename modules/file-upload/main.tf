@@ -110,6 +110,7 @@ resource "aws_s3_bucket_notification" "file-upload-reader-trigger" {
     lambda_function_arn = aws_lambda_function.file-upload-reader.arn
     events              = ["s3:ObjectCreated:*"]
   }
+  depends_on = [aws_lambda_function.file-upload-reader]
 }
 
 resource "aws_lambda_permission" "file-upload-invoke" {
