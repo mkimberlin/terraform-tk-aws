@@ -1,38 +1,37 @@
-# Ensure that all users have MFA enabled, but allow self-management
-# of various other credentials
-module enforce_mfa {
-  source  = "terraform-module/enforce-mfa/aws"
-  version = "~> 1.0"
-
-  policy_name                     = "managed-mfa-enforce"
-  manage_own_signing_certificates  = true
-  manage_own_ssh_public_keys      = true
-  manage_own_git_credentials      = true
+module "global" {
+  source  = "./environments/global"
+  default_region = var.default_region
+  budget_notification_recipients = var.budget_notification_recipients
 }
 
-# Create admin resources
-module "admin" {
-  source  = "./admin"
+# Load modules for each of the configured environments...these can't be
+# located dynamically because module source can't be interpolated in Terraform
+module "development-asia" {
+  count = contains(var.environments, "development/asia") ? 1 : 0
+  source    = "./environments/development/asia"
+  depends_on = [module.global]
 }
 
-# Create file upload system resources
-module "file-upload" {
-  source  = "./file-upload"
+module "development-us" {
+  count = contains(var.environments, "development/us") ? 1 : 0
+  source    = "./environments/development/us"
+  depends_on = [module.global]
 }
 
-# Establish a budget and notification to let us know if we spend even a cent
-resource "aws_budgets_budget" "no-money" {
-  name              = "no-money"
-  budget_type       = "COST"
-  limit_amount      = "0.01"
-  limit_unit        = "USD"
-  time_unit         = "MONTHLY"
+module "production-asia" {
+  count = contains(var.environments, "production/asia") ? 1 : 0
+  source    = "./environments/production/asia"
+  depends_on = [module.global]
+}
 
-  notification {
-    comparison_operator        = "EQUAL_TO"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = var.budget_notification_recipients
-  }
+module "production-europe" {
+  count = contains(var.environments, "production/europe") ? 1 : 0
+  source    = "./environments/production/europe"
+  depends_on = [module.global]
+}
+
+module "production-us" {
+  count = contains(var.environments, "production/us") ? 1 : 0
+  source    = "./environments/production/us"
+  depends_on = [module.global]
 }
