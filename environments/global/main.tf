@@ -27,11 +27,6 @@ resource "aws_budgets_budget" "no-money" {
   }
 }
 
-# Create admin resources
-module "admin" {
-  source  = "../../modules/admin"
-}
-
 #Create global file upload drop and processing
 module "file-upload" {
   source = "../../modules/file-upload"
