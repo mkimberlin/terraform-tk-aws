@@ -65,6 +65,29 @@ satisfaction and proceed to the next step.
 Now simply run `terraform apply` (again from the `bootstrap` directory) and confirm the deployment when prompted. Once
 this completes, the `backend.tf` file will be generated in the project root directory, and your main module will be ready to use!
 
+### Provisioning Default Resources
+
+#### Initialize Main Module
+Once you have [bootstrapped your environment](#bootstrapping-your-environment), you can initialize the main module by
+running the `terraform init` command from the project root directory. You should see messages acknowledging the
+successful initialization of Terraform.
+
+#### Review Main Module Resources
+Once again, this step is optional, but it gives you the opportunity to review the resources to be created. To do this,
+run `terraform plan` from the project root directory. Terraform will display its deployment plan. Review this to your
+satisfaction and proceed to the next step.
+
+#### Deploy Main Module Resources
+Now simply run `terraform apply` (again from the project root directory) and confirm the deployment when prompted. Once
+this completes, the project's resources will be available for use on AWS.
+
+## Shutting Down Resources
+In order to fully destroy all resources created by these scripts, you will need to first run `terraform destroy` from
+the project root directory and confirm the destruction of the resources when prompted. Once you've done this, it is also
+advisable to remove your bootstrap resources as well if you are done working with these scripts. You can do this by
+running `terraform destroy` from the `bootstrap/` subdirectory. Assuming both of these commands complete without error,
+all the resources created by these scripts should have been removed.
+
 ## Project Structure
 The project root contains the main Terraform module. This module drives the creation of all other resources in a
 configurable fashion.
@@ -109,10 +132,3 @@ these below as they are added.
 This module contains an application component meant to support upload of some sort of file to an [S3 Bucket](https://docs.aws.amazon.com/s3/)
 by a specific group of users within the organization. When a user uploads a new file to the bucket, a [Lambda Function](https://docs.aws.amazon.com/lambda/)
 is triggered that publishes some file information to an [SQS message](https://docs.aws.amazon.com/sqs/) queue.
-
-## Shutting Down Resources
-In order to fully destroy all resources created by these scripts, you will need to first run `terraform destroy` from
-the project root directory and confirm the destruction of the resources when prompted. Once you've done this, it is also
-advisable to remove your bootstrap resources as well if you are done working with these scripts. You can do this by
-running `terraform destroy` from the `bootstrap/` subdirectory. Assuming both of these commands complete without error,
-all the resources created by these scripts should have been removed. 
