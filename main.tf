@@ -1,7 +1,6 @@
 module "global" {
   source  = "./environments/global"
   default_region = var.default_region
-  budget_notification_recipients = var.budget_notification_recipients
 }
 
 # Load modules for each of the configured environments...these can't be

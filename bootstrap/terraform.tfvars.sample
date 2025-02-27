@@ -1,0 +1,2 @@
+budget_notification_recipients = ["your.email@yourprovider.com"]
+region = "us-east-2"
