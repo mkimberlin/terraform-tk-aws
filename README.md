@@ -4,7 +4,6 @@ this, but there may be some things in here that you wouldn't tell others you eat
 as a learning exercise for me. My intent is to use "real world" requirements and challenges (such as multiple
 environments, users and developers in different geographic areas, etc.) to drive my learning.
 
-
 ## Things To Know
 I am attempting to keep any resources that this creates in the free tier for AWS. However, I would highly advise
 performing a [complete resource shutdown](#shutting-down-resources) at the end of every time you work with these
@@ -132,3 +131,7 @@ these below as they are added.
 This module contains an application component meant to support upload of some sort of file to an [S3 Bucket](https://docs.aws.amazon.com/s3/)
 by a specific group of users within the organization. When a user uploads a new file to the bucket, a [Lambda Function](https://docs.aws.amazon.com/lambda/)
 is triggered that publishes some file information to an [SQS message](https://docs.aws.amazon.com/sqs/) queue.
+
+### `monolith-app` Module
+This module contains the framework for a monolith application deployed to an [EC2](https://aws.amazon.com/ec2/) instance
+within a [VPC](https://aws.amazon.com/vpc/). By default it uses an unmodified Ubuntu [AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html).

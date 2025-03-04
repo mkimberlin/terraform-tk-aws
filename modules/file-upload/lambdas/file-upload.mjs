@@ -20,8 +20,15 @@ export const handler = async (event) => {
 
     const sqsParams = {
       QueueUrl: SQS_QUEUE_URL,
-      MessageBody: data,
+      MessageBody: JSON.stringify({
+        message: "new-upload",
+        bucketName,
+        objectKey,
+        size: data.length,
+      }),
     };
+
+    console.log(JSON.stringify(sqsParams));
 
     await sqsClient.send(new SendMessageCommand(sqsParams));
 

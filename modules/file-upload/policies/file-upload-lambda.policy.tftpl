@@ -23,6 +23,14 @@
         "s3:ListBucket"
       ],
       "Resource": "${bucket-arn}"
-   }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sqs:SendMessage",
+        "sqs:ReceiveMessage"
+      ],
+      "Resource": "${queue-arn}"
+    }
   ]
 }

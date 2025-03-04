@@ -32,7 +32,7 @@ resource "aws_iam_group" "file-upload-group" {
 
 # Membership definition for the file upload group
 resource "aws_iam_group_membership" "file-uploaders" {
-  name = "file-uploaders"
+  name  = "file-uploaders"
 
   users = [
     aws_iam_user.file-upload-user1.name,
@@ -58,8 +58,8 @@ resource "aws_iam_group_policy_attachment" "upload-only-policy-attachment" {
 
 # Create an execution role for the lambda responsible for reading uploaded files
 resource "aws_iam_role" "file-upload-reader" {
-  name = "file-upload-reader"
-  assume_role_policy = file("${path.module}/policies/lambda-may-assume-role.policy.json")
+  name                = "file-upload-reader"
+  assume_role_policy  = file("${path.module}/policies/lambda-may-assume-role.policy.json")
 }
 
 # Create an inline role policy from a template file that only allows read access
@@ -68,7 +68,7 @@ resource "aws_iam_role" "file-upload-reader" {
 resource "aws_iam_role_policy" "file-upload-reader-policy" {
   name    = "file-upload-reader-policy"
   role    = aws_iam_role.file-upload-reader.id
-  policy  = templatefile("${path.module}/policies/file-upload-lambda.policy.tftpl", { bucket-arn: aws_s3_bucket.file-upload.arn })
+  policy  = templatefile("${path.module}/policies/file-upload-lambda.policy.tftpl", { bucket-arn: aws_s3_bucket.file-upload.arn, queue-arn: aws_sqs_queue.file-upload-queue.arn })
 }
 
 data "archive_file" "lambda-archive" {
@@ -81,17 +81,17 @@ data "archive_file" "lambda-archive" {
 resource "aws_lambda_function" "file-upload-reader" {
   # If the file is not in the current working directory you will need to include a
   # path. module in the filename.
-  filename      = "${path.module}/dist/lambda_function_payload.zip"
-  function_name = var.lambda-function-name
-  role          = aws_iam_role.file-upload-reader.arn
-  source_code_hash = data.archive_file.lambda-archive.output_base64sha256
-  runtime = "nodejs22.x"
-  handler = "file-upload.handler"
-  depends_on    = [aws_cloudwatch_log_group.file-upload-reader]
+  filename          = "${path.module}/dist/lambda_function_payload.zip"
+  function_name     = var.lambda-function-name
+  role              = aws_iam_role.file-upload-reader.arn
+  source_code_hash  = data.archive_file.lambda-archive.output_base64sha256
+  runtime           = "nodejs22.x"
+  handler           = "file-upload.handler"
+  depends_on        = [aws_cloudwatch_log_group.file-upload-reader]
 
   environment {
     variables = {
-      # "SQS_QUEUE_URL" = aws_sqs_queue...
+      "SQS_QUEUE_URL" = aws_sqs_queue.file-upload-queue.url
     }
   }
 }
@@ -100,23 +100,49 @@ resource "aws_lambda_function" "file-upload-reader" {
 resource "aws_cloudwatch_log_group" "file-upload-reader" {
   name              = "/aws/lambda/${var.lambda-function-name}"
   retention_in_days = 7
-  skip_destroy = false
+  skip_destroy      = false
 }
 
 resource "aws_s3_bucket_notification" "file-upload-reader-trigger" {
-  bucket = aws_s3_bucket.file-upload.id
+  bucket  = aws_s3_bucket.file-upload.id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.file-upload-reader.arn
     events              = ["s3:ObjectCreated:*"]
   }
-  depends_on = [aws_lambda_permission.file-upload-invoke]
+  depends_on  = [aws_lambda_permission.file-upload-invoke]
 }
 
 resource "aws_lambda_permission" "file-upload-invoke" {
   statement_id  = "AllowS3Invoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.file-upload-reader.arn
-  principal = "s3.amazonaws.com"
-  source_arn = aws_s3_bucket.file-upload.arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.file-upload.arn
+}
+
+resource "aws_sqs_queue" "file-upload-queue" {
+  name                    = "file-upload-queue"
+  sqs_managed_sse_enabled = true
+  fifo_queue              = true
+
+  redrive_policy  = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.deadletter-queue.arn
+    maxReceiveCount     = 4
+  })
+}
+
+resource "aws_sqs_queue" "deadletter-queue" {
+  name                    = "deadletter-queue"
+  sqs_managed_sse_enabled = true
+  fifo_queue              = true
+}
+
+resource "aws_sqs_queue_redrive_allow_policy" "queue-redrive-allow" {
+  queue_url = aws_sqs_queue.deadletter-queue.id
+
+  redrive_allow_policy  = jsonencode({
+    redrivePermission = "byQueue",
+    sourceQueueArns   = [aws_sqs_queue.file-upload-queue.arn]
+  })
 }
