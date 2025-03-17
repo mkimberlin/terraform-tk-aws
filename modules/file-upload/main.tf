@@ -122,7 +122,7 @@ resource "aws_lambda_permission" "file-upload-invoke" {
 }
 
 resource "aws_sqs_queue" "file-upload-queue" {
-  name                    = "file-upload-queue"
+  name                    = "file-upload-queue.fifo"
   sqs_managed_sse_enabled = true
   fifo_queue              = true
 
@@ -133,7 +133,7 @@ resource "aws_sqs_queue" "file-upload-queue" {
 }
 
 resource "aws_sqs_queue" "deadletter-queue" {
-  name                    = "deadletter-queue"
+  name                    = "deadletter-queue.fifo"
   sqs_managed_sse_enabled = true
   fifo_queue              = true
 }
